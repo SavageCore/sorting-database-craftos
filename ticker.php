@@ -44,8 +44,12 @@ switch($_GET['pretty']){
 		echo '<p>Hold shift for multi-sort</p>';
 		break;
 	default:
-		while($row = $result->fetch_array(MYSQLI_ASSOC)){
-			echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
+		if($result->num_rows > 0){
+			while($row = $result->fetch_array(MYSQLI_ASSOC)){
+				echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
+			}
+		} else {
+			echo 'Nothing in database';
 		}
 }
 $result->free();
