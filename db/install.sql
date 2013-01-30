@@ -27,5 +27,4 @@ CREATE TABLE IF NOT EXISTS `mc_items` (
   `uuid` int(11) DEFAULT NULL COMMENT 'Unique ID from MiscPeripherals',
   `amount` int(11) NOT NULL COMMENT 'Amount of item in storage',
   UNIQUE KEY `id,meta` (`id`,`meta`),
-  KEY `id` (`id`,`meta`,`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
