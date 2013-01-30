@@ -45,7 +45,7 @@ switch($_GET['pretty']){
 		break;
 	default:
 		while($row = $result->fetch_array(MYSQLI_ASSOC)){
-			echo 'id="' . $row["id"] . '" meta="' . $row["meta"] . '" name="' . $row['name'] . '" short="' . $row['short'] . '" uuid="' . $row['uuid'] . '" amount="' . $row['amount'] . '"' . "\n";
+			echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
 		}
 }
 $result->free();

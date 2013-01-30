@@ -61,9 +61,11 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			require_once('db/extract.php');
 			break;
 		case 'ticker':
-			//pretty = true displays jQuery sortable table (for humans)
-			//pretty = false plain text (for CraftOS)
+			//pretty = true displays jQuery sortable table (for humans) and calling index.html wraps it in html
 			//index.html?mode=ticker&pretty=true&password=
+			//
+			//pretty = false plain text (for CraftOS) does not call html file so no css etc.
+			//index.php?mode=ticker&pretty=true&password=
 			require_once('ticker.php');
 			break;
 	}
