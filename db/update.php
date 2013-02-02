@@ -9,13 +9,10 @@
 			printf("Connect failed: %s\n", mysqli_connect_error());
 			exit();
 	}
-	$query = 'INSERT INTO ' . $conf['db_full'] . ' (id,meta,name,short,uuid,amount)';
-	$query .= ' VALUES ("' . $mc_id . '","' . $mc_meta . '","' . $mc_name . '","' . $mc_short . '","' . $mc_uuid . '","' . $mc_amount . '")';
-	$query .= ' ON DUPLICATE KEY UPDATE';
-	$query .= ' id="' . $mc_id . '",meta="' . $mc_meta . '",name="' . $mc_name . '",short="' . $mc_short . '",uuid="' . $mc_uuid . '",amount = amount+' . $mc_amount;
+	$query = "UPDATE " . $conf['db_full'] . " SET amount = amount + '" . $mc_amount . "' WHERE id = '" . $mc_id . "' AND meta = '" . $mc_meta . "'";
 	if($conf['debug'] === true) echo '<p class="warning">query = ' . $query . '</p>';
 	if ($mysqli->query($query)) {
-			printf("%d Row inserted.\n", $mysqli->affected_rows);
+			printf("%d Row updated.\n", $mysqli->affected_rows);
 	} elseif($conf['debug'] === true) {
 			printf("Mysql error: %s\n", $mysqli->error);
 	}

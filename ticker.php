@@ -11,7 +11,8 @@ if (mysqli_connect_errno() and $conf['debug'] === true) {
     exit();
 }
 
-$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " ORDER by id";
+$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " WHERE amount > 0 ORDER by id";
+if(isset($mc_ticklimit)) $query .= " LIMIT $mc_ticklimit";
 $result = $mysqli->query($query);
 
 switch($_GET['pretty']){

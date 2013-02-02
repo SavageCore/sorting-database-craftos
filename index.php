@@ -12,7 +12,7 @@ require('config.php');
 // Check if password is set
 if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 		//if mode is Ticker no GETs required
-		if($_GET['mode'] == 'insert' or $_GET['mode'] == 'extract'){
+		if($_GET['mode'] == 'insert' or $_GET['mode'] == 'extract' or $_GET['mode'] == 'update'){
 			//Sanitize id,meta,amount $_GET's as they are used in most modes and declare global for use elsewhere
 			global $mc_id;
 			global $mc_meta;
@@ -53,19 +53,27 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			} else {
 					exit("uuid not numeric or missing!");
 			}
-			//index.html?mode=insert&id=35&meta=1&name=Orange%20wool&short=OWOL&uuid=668292100&amount=2&password=
+			//index.php?mode=insert&id=35&meta=1&name=Orange%20wool&short=OWOL&uuid=668292100&amount=2&password=
 			require_once('db/insert.php');
 			break;
 		case 'extract':
-			//index.html?mode=extract&id=35&meta=1&amount=2&password=
+			//index.php?mode=extract&id=35&meta=1&amount=2&password=
 			require_once('db/extract.php');
+			break;
+		case 'update':
+			//index.php?mode=update&id=4&meta=0&amount=2&password=
+			require_once('db/update.php');
 			break;
 		case 'ticker':
 			//pretty = true displays jQuery sortable table (for humans) and calling index.html wraps it in html
 			//index.html?mode=ticker&pretty=true&password=
 			//
 			//pretty = false plain text (for CraftOS) does not call html file so no css etc.
-			//index.php?mode=ticker&pretty=true&password=
+			//index.php?mode=ticker&pretty=false&limit=0,1&password=
+			if(isset($_GET['limit'])){
+				global $mc_ticklimit;
+				$mc_ticklimit = $mysqli->real_escape_string($_GET['limit']);
+			}
 			require_once('ticker.php');
 			break;
 	}

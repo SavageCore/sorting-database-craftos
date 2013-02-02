@@ -13,7 +13,7 @@
 	if($conf['debug'] === true) echo '<p class="warning">query = ' . $query . '</p>';
 	if ($mysqli->query($query)) {
 			printf("%d Row inserted.\n", $mysqli->affected_rows);
-	} else {
+	} elseif($conf['debug'] === true) {
 			printf("Mysql error: %s\n", $mysqli->error);
 	}
 	$mysqli->close();
