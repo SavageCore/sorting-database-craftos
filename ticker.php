@@ -11,7 +11,7 @@ if (mysqli_connect_errno() and $conf['debug'] === true) {
     exit();
 }
 
-$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " WHERE amount > 0 ORDER by id";
+$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " ORDER by id";
 if(isset($mc_ticklimit)) $query .= " LIMIT $mc_ticklimit";
 $result = $mysqli->query($query);
 
@@ -44,6 +44,30 @@ switch($_GET['pretty']){
 		echo '</table>' . "\n";
 		echo '<p>Hold shift for multi-sort</p>';
 		break;
+	case 'json':
+		//Press X to Jason
+		//JASON.... JASON.....JAAAASSONN
+		$response = array();
+		if($result->num_rows > 0){
+			$response["success"] = 1;
+			while($row = $result->fetch_assoc()){
+				//echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
+				$response[] = $row;
+				//$response["id"] = $row["id"];
+				//$response["meta"] = $row["meta"];
+				//$response["name"] = $row["name"];
+				//$response["amount"] = $row["amount"];
+			}
+		} else {
+			$response["success"] = 0;
+			echo 'Nothing in database';
+		}
+		if(phpVersion() >= 50400){
+			echo json_encode($response, JSON_PRETTY_PRINT);
+		} else {
+			echo json_encode($response);
+		}
+		break;
 	default:
 		if($result->num_rows > 0){
 			while($row = $result->fetch_array(MYSQLI_ASSOC)){
@@ -51,6 +75,7 @@ switch($_GET['pretty']){
 			}
 		} else {
 			echo 'Nothing in database';
+			echo $mc_ticklimit;
 		}
 }
 $result->free();

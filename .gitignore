@@ -10,3 +10,4 @@ nbproject
 
 # Others #
 config.php
+/db/import.php

@@ -1,0 +1,29 @@
+local tArgs = {...}
+local name = tArgs[1]
+local short = tArgs[2]
+local sortdir = "bottom"
+local invdir = 4
+local wwwdir = "http://savagecore.myaddress.com"
+local password = "XXXXXXXXXXXX"
+
+if not peripheral.isPresent(sortdir) then
+      return false, "No Peripheral"
+end
+if peripheral.getType(sortdir) ~= "interactiveSorter" then
+      return false, "Not a sorter"
+end
+sorter = peripheral.wrap(sortdir)
+
+while true do
+  local ev, item, count = os.pullEvent()
+  if ev == "isort_item" then
+    sorter.sort(invdir)
+    itemId = bit.band(item, 0x7fff)
+    damageValue = bit.brshift(item, 15)
+    url = wwwdir .. "index.html?mode=update&id=" .. itemId .. "&meta=" .. damageValue .. "&amount=" .. count .. "&password=" .. password
+    sConnection = http.get(url)
+    sConnection.close()
+    os.run({}, "startup")
+    return
+  end
+end

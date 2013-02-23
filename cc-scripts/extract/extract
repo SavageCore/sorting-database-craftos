@@ -1,0 +1,12 @@
+local tArgs = {...}
+local computer = os.getComputerID()
+local t = {}
+
+table.insert(t,computer)
+table.insert(t,tArgs[1])
+table.insert(t,tArgs[2])
+local msg = textutils.serialize(t)
+rednet.open("back")
+rednet.send(4, msg)
+local id, msg = rednet.receive(2)
+print(msg)

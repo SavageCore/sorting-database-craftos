@@ -1,0 +1,136 @@
+rednet.open("bottom")
+local id, msg = rednet.receive()
+--Wait until message received.....
+
+function mysplit(inputstr, sep)
+  if sep == nil then
+          sep = "%s"
+  end
+  t={} ; i=1
+  for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+          t[i] = str
+          i = i + 1
+  end
+  return t
+end
+
+local requested = textutils.unserialize(msg)
+local wwwdir = "http://savagecore.myaddress.com"
+local password = "XXXXXXXXXXXX"
+local nextComputer = 5
+local item = mysplit(requested[2], ":")
+local iid = tonumber(item[1])
+local meta = tonumber(item[2])
+if meta == nil then
+  meta = 0
+end
+local requestedAmount = tonumber(requested[3])
+-- t[1] - Computer that request came from
+-- t[2] - ID:Meta Requested
+-- t[3] - Amount requested
+--print ("Computer ".. requested[1] .. " has requested " .. requested[3] .. " " .. requested[2])
+
+function print_r ( t )
+    local print_r_cache={}
+    local function sub_print_r(t,indent)
+        if (print_r_cache[tostring(t)]) then
+            print(indent.."*"..tostring(t))
+        else
+            print_r_cache[tostring(t)]=true
+            if (type(t)=="table") then
+                for pos,val in pairs(t) do
+                    if (type(val)=="table") then
+                        print(indent.."["..pos.."] => "..tostring(t).." {")
+                        sub_print_r(val,indent..string.rep(" ",string.len(pos)+8))
+                        print(indent..string.rep(" ",string.len(pos)+6).."}")
+                    else
+                        print(indent.."["..pos.."] => "..tostring(val))
+                    end
+                end
+            else
+                print(indent..tostring(t))
+            end
+        end
+    end
+    sub_print_r(t,"  ")
+end
+
+function stacksContain(table, item, meta)
+  for key, value in pairs(table) do
+    if tonumber(value["id"]) == tonumber(item) and tonumber(value["meta"]) == tonumber(meta) then
+      return true, key
+    end
+  end
+  return false
+end
+
+--Request has come in for item. Check either sorter to see if the barrels contain said item.
+if not peripheral.isPresent("left") then
+      return false, "No Peripheral"
+end
+if peripheral.getType("left") ~= "interactiveSorter" then
+      return false, "Not a sorter"
+end
+
+local peripheralDirection = "left"
+local chestDirection = 0
+
+function getStacks(chestDirection,peripheralDirection)
+  local stacks = {}
+  for item,count in pairs(peripheral.call(peripheralDirection, "list", chestDirection)) do
+    itemId = bit.band(item, 0x7fff)
+    damageValue = bit.brshift(item, 15)
+    local stack = {}
+    stack.amount = tonumber(count)
+    stack.id = tonumber(itemId)
+    stack.meta = tonumber(damageValue)
+    stack.uuid = tonumber(item)
+    table.insert(stacks, stack)
+  end
+  return stacks
+end
+
+local stacks = getStacks(chestDirection,peripheralDirection)
+local sorter = peripheral.wrap(peripheralDirection)
+
+if stacksContain(stacks, iid, meta) then
+  result, tableKey = stacksContain(stacks, iid, meta)
+  if stacks[tableKey]["amount"] >= requestedAmount then
+    sorter.extract(0,stacks[tableKey]["uuid"],4,requestedAmount)
+    rednet.send(tonumber(requested[1]), "Item ready for collection!")
+    url = wwwdir .. "index.php?mode=extract&id=" .. stacks[tableKey]["id"] .. "&meta=" .. stacks[tableKey]["meta"] .. "&amount=" .. tonumber(requested[3]) .. "&password=" .. password
+    sConnection = http.get(url)
+    sConnection.close()
+    os.run({}, "startup")
+    return true
+  else
+    rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
+    os.run({}, "startup")
+  end
+else
+  local peripheralDirection = "right"
+  local stacks = getStacks(chestDirection,peripheralDirection)
+  local sorter = peripheral.wrap(peripheralDirection)
+  if stacksContain(stacks, iid, meta) then
+    result, tableKey = stacksContain(stacks, iid, meta)
+    if stacks[tableKey]["amount"] >= requestedAmount then
+      sorter.extract(0,stacks[tableKey]["uuid"],4,requestedAmount)
+      rednet.send(tonumber(requested[1]), "Item ready for collection!")
+      url = wwwdir .. "index.php?mode=extract&id=" .. stacks[tableKey]["id"] .. "&meta=" .. stacks[tableKey]["meta"] .. "&amount=" .. tonumber(requested[3]) .. "&password=" .. password
+      sConnection = http.get(url)
+      sConnection.close()
+      os.run({}, "startup")
+      return true
+    else
+      rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
+      os.run({}, "startup")
+    end
+  else
+    -- UNCOMMENT line below if last computer in array.
+    --rednet.send(tonumber(requested[1]), "Item not found")
+    --Send rednet message to next in array, forcing it to start.
+    rednet.send(nextComputer, msg)
+    --restart script
+    os.run({}, "startup")
+  end
+end

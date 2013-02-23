@@ -1,0 +1,113 @@
+local tArgs = {...}
+local periphdir = tArgs[1]
+local wwwdir = "http://savagecore.myaddress.com"
+local password = "XXXXXXXXXXXX"
+
+function mysplit(inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        t={} ; i=1
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                t[i] = str
+                i = i + 1
+        end
+        return t
+end
+
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+if tArgs[1] == nil then
+  --print("Usage: ticker <direction>")
+  --print("Valid directions: left right front back top bottom")
+  --print("-----")
+  --print("Will attempt to find monitor...")
+  if peripheral.isPresent("front") and peripheral.getType("front") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "front"
+  elseif peripheral.isPresent("back") and peripheral.getType("back") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "back"
+  elseif peripheral.isPresent("left") and peripheral.getType("left") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "left"
+  elseif peripheral.isPresent("right") and peripheral.getType("right") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "right"
+  elseif peripheral.isPresent("top") and peripheral.getType("top") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "top"
+  elseif peripheral.isPresent("bottom") and peripheral.getType("bottom") == "monitor" then
+    --print("Monitor found, re-running script.")
+    periphdir = "bottom"
+  end
+  os.run({}, "startup", periphdir)
+else
+  local monitor = peripheral.wrap(periphdir)
+  monitor.clear()
+  mX, mY = monitor.getSize()
+  monitor.setTextScale(1)
+  function newLine()
+    local _,cY= monitor.getCursorPos()
+    monitor.setCursorPos(1,cY+1)
+    return cY
+  end
+  lMin = 0
+  lMax = mY
+  while true do
+    local url = wwwdir .. "index.php?mode=ticker&pretty=false&limit=" .. lMin .. "," .. lMax .. "&password=" .. password
+    local response = http.get(url)
+    if response then
+     local sResponse = response.readAll()
+     response.close()
+      --Is Monitor connected?
+      if peripheral.isPresent(periphdir) then
+        if peripheral.getType(periphdir) == "monitor" then
+          monitor.clear()
+          monitor.setBackgroundColor(2048)
+          monitor.setTextColor(1)
+          -- Monitor connected, start printing.
+          monitor.setCursorPos(1,1)
+          monitor.write("ID:Meta | Name | Amount")
+          newLine()
+          ticker = mysplit(sResponse,"|")
+          for i=1,# ticker do
+            monitor.write(ticker[i])
+            newLine()
+          end
+        end
+      end
+    local ev, side, touchX, touchY = os.pullEvent("monitor_touch")
+    rightHand = mX - 5
+    leftHand = 5
+    bottomRow = mY - 5
+    centre = mX / 2
+    centre = round(centre)
+    -- Backwards
+    if touchY < bottomRow and touchX < centre then
+      difference = lMax - lMin
+      lMin = lMin - difference + 1
+      if lMin < 0 then lMin = 0 end
+      lMax = lMax - difference + 1
+      if lMax < mY then lMax = mY end
+    end
+    -- Forwards
+    if touchY < bottomRow and touchX > centre then
+      lMin = lMax
+      lMax = lMax + mY
+      lMin = lMin - 1
+    end
+    if touchX <= leftHand and touchY >= bottomRow then
+      lMin = 0
+      lMax = mY
+    end
+    if touchX >= rightHand and touchY >= bottomRow  then
+      print("refresh")
+    end
+    --sleep(15)
+    end
+  end
+end
