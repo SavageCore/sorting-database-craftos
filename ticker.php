@@ -51,12 +51,7 @@ switch($_GET['pretty']){
 		if($result->num_rows > 0){
 			$response["success"] = 1;
 			while($row = $result->fetch_assoc()){
-				//echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
 				$response[] = $row;
-				//$response["id"] = $row["id"];
-				//$response["meta"] = $row["meta"];
-				//$response["name"] = $row["name"];
-				//$response["amount"] = $row["amount"];
 			}
 		} else {
 			$response["success"] = 0;
@@ -75,7 +70,6 @@ switch($_GET['pretty']){
 			}
 		} else {
 			echo 'Nothing in database';
-			echo $mc_ticklimit;
 		}
 }
 $result->free();

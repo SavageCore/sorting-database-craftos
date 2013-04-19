@@ -5,8 +5,8 @@
  * terms of the Do What The Fuck You Want To Public License, Version 2,
  * as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  *
- * Valid modes are insert and extract
- * Inputs are id, meta  (Yo dawg...), name, short, uuid, amount
+ * Valid modes are insert, extract, update and ticker
+ * Inputs are id, meta (Yo dawg...), name, short, uuid, amount
  */
 require('config.php');
 // Check if password is set

@@ -80,19 +80,19 @@ else
           end
         end
       end
-    local ev, side, touchX, touchY = os.pullEvent("monitor_touch")
-    rightHand = mX - 5
-    leftHand = 5
-    bottomRow = mY - 5
-    centre = mX / 2
-    centre = round(centre)
-    -- Backwards
-    if touchY < bottomRow and touchX < centre then
-      difference = lMax - lMin
-      lMin = lMin - difference + 1
-      if lMin < 0 then lMin = 0 end
-      lMax = lMax - difference + 1
-      if lMax < mY then lMax = mY end
+      local ev, side, touchX, touchY = os.pullEvent("monitor_touch")
+      rightHand = mX - 5
+      leftHand = 5
+      bottomRow = mY - 5
+      centre = mX / 2
+      centre = round(centre)
+      -- Backwards
+      if touchY < bottomRow and touchX < centre then
+        difference = lMax - lMin
+        lMin = lMin - difference + 1
+        if lMin < 0 then lMin = 0 end
+        lMax = lMax - difference + 1
+        if lMax < mY then lMax = mY end
     end
     -- Forwards
     if touchY < bottomRow and touchX > centre then
@@ -105,9 +105,7 @@ else
       lMax = mY
     end
     if touchX >= rightHand and touchY >= bottomRow  then
-      print("refresh")
     end
-    --sleep(15)
     end
   end
 end
