@@ -35,21 +35,21 @@ How does this all work? What is it about? Read on...
 
 ## What each script does and how to use them
 
-** Add **
+**Add**
 
 `add Cobblestone CBBL`
 
 What we are doing here is calling the script `add` then setting the Full Name and Short Name (kinda like the stock market code)
 
-** Ingame setup: **
+**Ingame setup:**
 
 ![Imgur](http://i.imgur.com/liN25ey.png)
 
-** is-terminals **
+**is-terminals**
 
 No commands with this one.
 
-** Ingame setup: **
+**Ingame setup:**
 
 ![Imgur](http://i.imgur.com/z324iOB.png)
 * Wireless Modem under computer *
@@ -60,7 +60,7 @@ When you place your second computer type `id` into the console again.
 In the `is-terminals` script on the **FIRST** computer edit `local nextComputer` with the ID of your **SECOND** computer.
 Then continue this pattern for all sorters. Second computer `is-terminals` points to Third, Third to Fourth etc.
 
-** Extract **
+**Extract**
 
 You need 1 Wireless Modem on the back of extraction computer.
 
@@ -68,11 +68,11 @@ You need 1 Wireless Modem on the back of extraction computer.
 
 The syntax here is Minecraft Item ID:Damage value and quantity so for 64 Red Wool it would be `extract 35:14 64` and 22 Gravel would be `extract 13 22` - * note that you can leave off damage value if it is 0 *
 
-** Ticker **
+**Ticker**
 
 No commands with this one.
 
-** Ingame setup: **
+**Ingame setup:**
 
 ![Imgur](http://i.imgur.com/VSPR242.png)
 
@@ -80,7 +80,7 @@ Nothing to setup here as previously we already edited `local wwwdir` and `local 
 
 This script displays your items in database.
 
-** Usage **
+**Usage**
 
 * Right clicking any of the bottom row of monitors Refreshes the screen and gets latest amounts.
 * Clicking top left monitor pages back
