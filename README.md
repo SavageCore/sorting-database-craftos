@@ -29,9 +29,9 @@ How does this all work? What is it about? Read on...
 
 ## ComputerCraft script and ingame setup
 
-1. Edit add, is-terminals, ticker in * cc-scripts * directory
- * Set * local wwwdir * as the URL to your website/PHP script setup above.
- * Set * local password * to the password created above.
+1. Edit add, is-terminals, ticker in `cc-scripts` directory
+ * Set `local wwwdir` as the URL to your website/PHP script setup above.
+ * Set `local password` to the password created above.
 
 ## What each script does and how to use them
 
@@ -52,7 +52,7 @@ No commands with this one.
 **Ingame setup:**
 
 ![Imgur](http://i.imgur.com/z324iOB.png)
-* Wireless Modem under computer *
+*Wireless Modem under computer*
 
 These computers chain together and require some editing of the script. When you place your first sorting computer down as pictured above it will be assigned a unique ID, type `id` into the console this will return `This is computer #X`. Make a note of this ID and edit `cc-scipts/extract` change the number 4 on the line `rednet.send(4, msg)` to whichever ID you just created.
 
@@ -66,7 +66,7 @@ You need 1 Wireless Modem on the back of extraction computer.
 
 `extract 1 64`
 
-The syntax here is Minecraft Item ID:Damage value and quantity so for 64 Red Wool it would be `extract 35:14 64` and 22 Gravel would be `extract 13 22` - * note that you can leave off damage value if it is 0 *
+The syntax here is Minecraft Item ID:Damage value and quantity so for 64 Red Wool it would be `extract 35:14 64` and 22 Gravel would be `extract 13 22` - *note that you can leave off damage value if it is 0*
 
 **Ticker**
 
