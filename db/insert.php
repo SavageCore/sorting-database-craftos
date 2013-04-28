@@ -9,10 +9,10 @@
 			printf("Connect failed: %s\n", mysqli_connect_error());
 			exit();
 	}
-	$query = 'INSERT INTO ' . $conf['db_full'] . ' (id,meta,name,short,uuid,amount)';
-	$query .= ' VALUES ("' . $mc_id . '","' . $mc_meta . '","' . $mc_name . '","' . $mc_short . '","' . $mc_uuid . '","' . $mc_amount . '")';
+	$query = 'INSERT INTO ' . $conf['db_full'] . ' (id,meta,name,short,uuid,amount,process)';
+	$query .= ' VALUES ("' . $mc_id . '","' . $mc_meta . '","' . $mc_name . '","' . $mc_short . '","' . $mc_uuid . '","' . $mc_amount . '","' . $mc_process . '")';
 	$query .= ' ON DUPLICATE KEY UPDATE';
-	$query .= ' id="' . $mc_id . '",meta="' . $mc_meta . '",name="' . $mc_name . '",short="' . $mc_short . '",uuid="' . $mc_uuid . '",amount = amount+' . $mc_amount;
+	$query .= ' id="' . $mc_id . '",meta="' . $mc_meta . '",name="' . $mc_name . '",short="' . $mc_short . '",uuid="' . $mc_uuid . '",amount = amount+' . $mc_amount . ',process="' . $mc_process . '"';
 	if($conf['debug'] === true) echo '<p class="warning">query = ' . $query . '</p>';
 	if ($mysqli->query($query)) {
 			printf("%d Row inserted.\n", $mysqli->affected_rows);

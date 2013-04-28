@@ -12,7 +12,7 @@ require('config.php');
 // Check if password is set
 if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 		//if mode is Ticker no GETs required
-		if($_GET['mode'] == 'insert' or $_GET['mode'] == 'extract' or $_GET['mode'] == 'update'){
+		if($_GET['mode'] == 'insert' or $_GET['mode'] == 'extract' or $_GET['mode'] == 'update' or $_GET['mode'] == 'check'){
 			//Sanitize id,meta,amount $_GET's as they are used in most modes and declare global for use elsewhere
 			global $mc_id;
 			global $mc_meta;
@@ -27,10 +27,15 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			} else {
 					exit("meta not numeric or missing!");
 			}
-			if(is_numeric($_GET['amount'])){
+			if(is_numeric(@$_GET['amount'])){
 					$mc_amount = $mysqli->real_escape_string($_GET['amount']);
-			} else {
+			} elseif ($_GET['mode'] != 'check') {
 					exit("amount not numeric or missing!");
+			}
+			if(@$_GET['process'] == '1' or @$_GET['process'] == '0'){
+				$mc_process = $mysqli->real_escape_string($_GET['process']);
+			} elseif ($_GET['mode'] != 'check' and $_GET['mode'] != 'update') {
+				exit("Incorrect parameters");
 			}
 		}
 	switch($_GET['mode']){
@@ -48,12 +53,7 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			} else {
 				exit("short not set!");
 			}
-			if(is_numeric($_GET['uuid'])){
-					$mc_uuid = $mysqli->real_escape_string($_GET['uuid']);
-			} else {
-					exit("uuid not numeric or missing!");
-			}
-			//index.php?mode=insert&id=35&meta=1&name=Orange%20wool&short=OWOL&uuid=668292100&amount=2&password=
+			//index.php?mode=insert&id=35&meta=1&name=Orange%20wool&short=OWOL&uuid=668292100&amount=2&process=0&password=
 			require_once('db/insert.php');
 			break;
 		case 'extract':
@@ -75,6 +75,10 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 				$mc_ticklimit = $mysqli->real_escape_string($_GET['limit']);
 			}
 			require_once('ticker.php');
+			break;
+		case 'check':
+			//index.php?mode=check&id=15&meta=0&password=
+			require_once('db/check.php');
 			break;
 	}
 } elseif ($conf['debug'] === true) {
