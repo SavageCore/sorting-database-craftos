@@ -17,6 +17,7 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			global $mc_id;
 			global $mc_meta;
 			global $mc_amount;
+			global $mc_threshold;
 			if(is_numeric($_GET['id'])){
 					$mc_id = $mysqli->real_escape_string($_GET['id']);
 			} else {
@@ -34,7 +35,12 @@ if($_GET['password'] != '' and $_GET['password'] == $conf['password']){
 			}
 			if(@$_GET['process'] == '1' or @$_GET['process'] == '0'){
 				$mc_process = $mysqli->real_escape_string($_GET['process']);
-			} elseif ($_GET['mode'] != 'check' and $_GET['mode'] != 'update') {
+			} elseif ($_GET['mode'] != 'check' and $_GET['mode'] != 'update' and $_GET['mode'] != 'extract') {
+				exit("Incorrect parameters");
+			}
+			if(@$_GET['threshold'] == '1' or @$_GET['threshold'] == '0'){
+				$mc_threshold = $mysqli->real_escape_string($_GET['threshold']);
+			} elseif ($_GET['mode'] != 'check' and $_GET['mode'] != 'update' and $_GET['mode'] != 'extract') {
 				exit("Incorrect parameters");
 			}
 		}

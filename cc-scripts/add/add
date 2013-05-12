@@ -1,34 +1,61 @@
+shell.run("clear")
 local tArgs = {...}
 local name = tArgs[1]
 local short = tArgs[2]
-local sortdir = "bottom"
-local invdir = 4
+local sortdir = "right"
+local invdir = 5
 local wwwdir = "http://savagecore.myaddress.com"
 local password = "XXXXXXXXXXXX"
 
-if(name == nil or short == nil) then
-  print("Usage: add <Full item name> <Short item name>")
-else
-  if not peripheral.isPresent(sortdir) then
-        return false, "No Peripheral"
+function doUpdate(item,meta,count,fname,sname,process,threshold)
+  urlString = wwwdir .. "index.html?mode=insert&id=" .. item .. "&meta=" .. meta .. "&name=" .. fname .. "&short=" .. sname .. "&amount=" .. count .. "&process=" .. process .. "&threshold=" .. threshold .. "&password=" .. password
+  http.request(urlString)
+  local updateSourceText
+  local updateEvent, updateUrl, updateSourceText = os.pullEvent()
+  if updateEvent == "http_success" then
+    return true, updateSourceText
+  else
+    return false
   end
-  if peripheral.getType(sortdir) ~= "interactiveSorter" then
-        return false, "Not a sorter"
-  end
-  sorter = peripheral.wrap(sortdir)
-  while true do
-    local ev, item, count = os.pullEvent()
-    if ev == "isort_item" then
-      --local id, data = librev.decodeToken(token)
-      data = 0
-      itemId = bit.band(item, 0x7fff)
-      damageValue = bit.brshift(item, 15)
+end
+
+function startUp()
+  print("")
+  print("SCI Item Database v1.0")
+  print("")
+  print("Full name of item e.g Cobblestone")
+  io.write("> ")
+  fname = io.read()
+  print("Short name of item e.g CBBL")
+  io.write("> ")
+  sname = io.read()
+  print("Process? (y/n)")
+  io.write("> ")
+  process = io.read()
+  if process == 'y' then process = 1 end
+  if process == 'n' then process = 0 end
+  print("Threshold (3456)")
+  io.write("> ")
+  threshold = io.read()
+  if threshold == nil then threshold = 3456 end
+end
+
+startUp()
+sorter = peripheral.wrap(sortdir)
+while true do
+  local ev, item, count = os.pullEvent()
+  if ev == "isort_item" then
+    itemId = bit.band(item, 0x7fff)
+    meta = bit.brshift(item, 15)
+    repeat
+      updateCheck, updateResponse = doUpdate(itemId,meta,count,fname,sname,process,threshold)
+    until updateCheck == true
+    if process == 1 then
+      sorter.sort(0)
+    else
       sorter.sort(invdir)
-      url = wwwdir .. "index.html?mode=insert&id=" .. itemId .. "&meta=" .. damageValue .. "&name=" .. name .. "&short=" .. short .. "&amount=" .. count .. "&password=" .. password
-      sConnection = http.get(url)
-      sConnection.close()
-      print("'" .. name .. "' Inserted into database")
-      return
     end
+    print("'" .. fname .. "' Inserted into database")
+    os.reboot()
   end
 end

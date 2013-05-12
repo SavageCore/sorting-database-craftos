@@ -11,18 +11,21 @@ if (mysqli_connect_errno() and $conf['debug'] === true) {
     exit();
 }
 
-$query = "SELECT process FROM " . $conf['db_full'] . " WHERE id = '" . $mc_id . "' AND meta= '" . $mc_meta . "'";
+$query = "SELECT amount,process,threshold FROM " . $conf['db_full'] . " WHERE id = '" . $mc_id . "' AND meta= '" . $mc_meta . "'";
 $result = $mysqli->query($query);
-
 if($result->num_rows > 0){
 	$row = $result->fetch_assoc();
 	if($row['process'] == 1){
-		echo "true";
+		$returnString = "true";
+		$returnString .= "|" . $row['threshold'];
+		$returnString .= "|" . $row['amount'];
 	} else {
-		echo "false";
+		$returnString = "false";
+		$returnString .= "|" . $row['threshold'];
+		$returnString .= "|" . $row['amount'];
 	}
+	echo $returnString;
 }
-
 $result->free();
 $mysqli->close();
 ?>

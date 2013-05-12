@@ -11,7 +11,7 @@ if (mysqli_connect_errno() and $conf['debug'] === true) {
     exit();
 }
 
-$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " ORDER by id";
+$query = "SELECT id, meta, name, short, uuid, amount FROM " . $conf['db_full'] . " WHERE process != '1' ORDER by name";
 if(isset($mc_ticklimit)) $query .= " LIMIT $mc_ticklimit";
 $result = $mysqli->query($query);
 
@@ -66,7 +66,8 @@ switch($_GET['pretty']){
 	default:
 		if($result->num_rows > 0){
 			while($row = $result->fetch_array(MYSQLI_ASSOC)){
-				echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
+				//echo $row["id"] . ':' . $row["meta"] . '	' . $row['name'] . '	' . $row['amount'] . "|";
+				echo $row['name'] . ':' . $row['amount'] . "|";
 			}
 		} else {
 			echo 'Nothing in database';

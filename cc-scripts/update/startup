@@ -1,10 +1,66 @@
+shell.run("clear")
+print("")
+print("SCI Item Update Module v1.1")
+print("")
 local tArgs = {...}
 local name = tArgs[1]
 local short = tArgs[2]
-local sortdir = "bottom"
+local sortdir = "left"
 local invdir = 4
 local wwwdir = "http://savagecore.myaddress.com"
 local password = "XXXXXXXXXXXX"
+debugVal = 'log'
+
+function mySplit(inputstr, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  t={} ; i=1
+  for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+    t[i] = str
+    i = i + 1
+  end
+  return t
+end
+
+function doCheck(item,count)
+  redstone.setOutput("top",true)
+  print("")
+  print("Doing check")
+  itemId = bit.band(item, 0x7fff)
+  meta = bit.brshift(item, 15)
+  checkUrl = wwwdir .. "index.php?mode=check&id=" .. itemId .. "&meta=".. meta.. "&password=" .. password
+  http.request(checkUrl)
+  local event, url, sourceText = os.pullEvent()
+  if event == "http_success" then
+    redstone.setOutput("top",false)
+    return true, sourceText, itemId, meta
+  else
+    print("Check false")
+    return false
+  end
+end
+
+function doUpdate(item,meta,count)
+  redstone.setOutput("top",true)
+  print("")
+  print("Doing update")
+  urlString = wwwdir .. "index.php?mode=update&id=" .. item .. "&meta=" .. meta .. "&amount=" .. count .. "&password=" .. password
+  http.request(urlString)
+  local updateSourceText
+  local updateEvent, updateUrl, updateSourceText = os.pullEvent()
+  if updateEvent == "http_success" then
+    print("")
+    print(urlString)
+    print("------------")
+    redstone.setOutput("top",false)
+    return true, updateSourceText
+  else
+    print("Update false")
+    return false
+  end
+end
+
 
 if not peripheral.isPresent(sortdir) then
       return false, "No Peripheral"
@@ -15,15 +71,45 @@ end
 sorter = peripheral.wrap(sortdir)
 
 while true do
-  local ev, item, count = os.pullEvent()
+  skipUpdate = false
+  local ev, item, amount = os.pullEvent()
   if ev == "isort_item" then
-    sorter.sort(invdir)
-    itemId = bit.band(item, 0x7fff)
-    damageValue = bit.brshift(item, 15)
-    url = wwwdir .. "index.html?mode=update&id=" .. itemId .. "&meta=" .. damageValue .. "&amount=" .. count .. "&password=" .. password
-    sConnection = http.get(url)
-    sConnection.close()
-    os.run({}, "startup")
-    return
+    print("")
+    print("Item: " .. item .. " " .. amount)
+    repeat
+      check, sourceText, ItemId, meta = doCheck(item,amount)
+    until check == true
+    respondedText = mySplit(sourceText.readAll(),'|')
+    sourceText.close()
+    if debugVal == 'debug' then print(respondedText) end
+    invdir = 5
+    if respondedText[1] == 'true' then
+      if (newAmount > threshold and threshold ~= 0) then
+        print("Skipping update")
+        skipUpdate = true
+        invdir = 2
+      else
+        invdir = 0
+      end
+    elseif respondedText[1] == 'false' then
+      threshold = tonumber(respondedText[2])
+      amountDatabase = tonumber(respondedText[3])
+      newAmount = tonumber(amountDatabase + amount)
+      if (newAmount > threshold and threshold ~= 0) then
+        print("Skipping update")
+        skipUpdate = true
+        invdir = 2
+      else
+        invdir = 5
+      end
+    end
+    if skipUpdate == false and check == true then
+      repeat
+        redstone.setOutput("top",true)
+        updateCheck, updateResponse = doUpdate(itemId,meta,amount)
+      until updateCheck == true
+        redstone.setOutput("top",false)
+    end
+    sorter.sort(invdir,amount)
   end
 end
