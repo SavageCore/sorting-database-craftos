@@ -1,8 +1,4 @@
-rednet.open("bottom")
-local id, msg = rednet.receive()
---Wait until message received.....
-
-function mysplit(inputstr, sep)
+function splitString(inputstr, sep)
   if sep == nil then
           sep = "%s"
   end
@@ -14,21 +10,32 @@ function mysplit(inputstr, sep)
   return t
 end
 
+shell.run("clear")
+print("SavageCore Item Database v1.0")
+print("")
+print("For more information visit:")
+print("")
+print("https://github.com/SavageCore/sorting-database-craftos")
+rednet.open("top")
+local id, msg = rednet.receive()
+--Wait until message received.....
+
 local requested = textutils.unserialize(msg)
 local wwwdir = "http://savagecore.myaddress.com"
 local password = "XXXXXXXXXXXX"
-local nextComputer = 5
-local item = mysplit(requested[2], ":")
+local nextComputer = 71
+local peripheralDirection = "bottom"
+local item = splitString(requested[2], ":")
 local iid = tonumber(item[1])
 local meta = tonumber(item[2])
-if meta == nil then
-  meta = 0
-end
+if meta == nil then meta = 0 end
 local requestedAmount = tonumber(requested[3])
+if requestedAmount == nil then requestedAmount = 1 end
+local sorter = peripheral.wrap(peripheralDirection)
 -- t[1] - Computer that request came from
 -- t[2] - ID:Meta Requested
 -- t[3] - Amount requested
---print ("Computer ".. requested[1] .. " has requested " .. requested[3] .. " " .. requested[2])
+print ("Computer ".. requested[1] .. " has requested " .. requestedAmount .. " " .. requested[2])
 
 function print_r ( t )
     local print_r_cache={}
@@ -54,83 +61,102 @@ function print_r ( t )
     end
     sub_print_r(t,"  ")
 end
-
-function stacksContain(table, item, meta)
-  for key, value in pairs(table) do
-    if tonumber(value["id"]) == tonumber(item) and tonumber(value["meta"]) == tonumber(meta) then
-      return true, key
-    end
-  end
-  return false
-end
-
---Request has come in for item. Check either sorter to see if the barrels contain said item.
-if not peripheral.isPresent("left") then
-      return false, "No Peripheral"
-end
-if peripheral.getType("left") ~= "interactiveSorter" then
-      return false, "Not a sorter"
-end
-
-local peripheralDirection = "left"
-local chestDirection = 0
-
 function getStacks(chestDirection,peripheralDirection)
   local stacks = {}
   for item,count in pairs(peripheral.call(peripheralDirection, "list", chestDirection)) do
     itemId = bit.band(item, 0x7fff)
     damageValue = bit.brshift(item, 15)
-    local stack = {}
-    stack.amount = tonumber(count)
-    stack.id = tonumber(itemId)
-    stack.meta = tonumber(damageValue)
-    stack.uuid = tonumber(item)
-    table.insert(stacks, stack)
+    if itemId ~= nil then
+      local stack = {}
+      stack.amount = tonumber(count)
+      stack.id = tonumber(itemId)
+      stack.meta = tonumber(damageValue)
+      stack.uuid = tonumber(item)
+      table.insert(stacks, stack)
+    else
+      return false
+    end
   end
   return stacks
 end
-
-local stacks = getStacks(chestDirection,peripheralDirection)
-local sorter = peripheral.wrap(peripheralDirection)
-
-if stacksContain(stacks, iid, meta) then
-  result, tableKey = stacksContain(stacks, iid, meta)
+function stacksContain(table, item, meta)
+  for key, value in pairs(table) do
+    if tonumber(value["id"]) == tonumber(item) and tonumber(value["meta"]) == tonumber(meta) then
+      tableKey = key
+      return true, tableKey
+    end
+  end
+  return false
+end
+function chestContain(direction)
+  stacks = getStacks(direction,peripheralDirection)
+  if stacksContain(stacks, iid, meta) then
+    return true, stacks
+  else
+    return false
+  end
+end
+function chestQuantity(requestedAmount,tableKey)
   if stacks[tableKey]["amount"] >= requestedAmount then
-    sorter.extract(0,stacks[tableKey]["uuid"],4,requestedAmount)
-    rednet.send(tonumber(requested[1]), "Item ready for collection!")
-    url = wwwdir .. "index.php?mode=extract&id=" .. stacks[tableKey]["id"] .. "&meta=" .. stacks[tableKey]["meta"] .. "&amount=" .. tonumber(requested[3]) .. "&password=" .. password
-    sConnection = http.get(url)
-    sConnection.close()
-    os.run({}, "startup")
     return true
   else
+    return false
+  end
+end
+
+function doExtract(item,meta,count,chest)
+  print("Doing update")
+  urlString = wwwdir .. "index.php?mode=extract&id=" .. item .. "&meta=" .. meta .. "&amount=" .. count .. "&password=" .. password
+  http.request(urlString)
+  local updateSourceText
+  local updateEvent, updateUrl, updateSourceText = os.pullEvent()
+  if updateEvent == "http_success" then
+    sorter.extract(chest,stacks[tableKey]["uuid"],2,requestedAmount)
+    rednet.send(tonumber(requested[1]), "Item ready for collection!")
+    return true, updateSourceText
+  else
+    print("Update false")
+    return false
+  end
+end
+
+--Direction values are: 0 for down, 1 for up, 2 for -Z, 3 for +Z, 4 for -X and 5 for +X.
+-- +z = 3, +x = 5, -x = 4
+if chestContain(5) == true then
+  if chestQuantity(requestedAmount,tableKey) == true then
+    repeat
+      updateCheck, updateResponse = doExtract(stacks[tableKey]["id"],stacks[tableKey]["meta"],tonumber(requested[3]),5)
+    until updateCheck == true
+    os.reboot()
+  else
     rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
-    os.run({}, "startup")
+    os.reboot()
+  end
+elseif chestContain(4) == true then
+  if chestQuantity(requestedAmount,tableKey) == true then
+    repeat
+      updateCheck, updateResponse = doExtract(stacks[tableKey]["id"],stacks[tableKey]["meta"],tonumber(requested[3]),4)
+    until updateCheck == true
+    os.reboot()
+  else
+    rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
+    os.reboot()
+  end
+elseif chestContain(3) == true then
+  if chestQuantity(requestedAmount,tableKey) == true then
+    repeat
+      updateCheck, updateResponse = doExtract(stacks[tableKey]["id"],stacks[tableKey]["meta"],tonumber(requested[3]),3)
+    until updateCheck == true
+    os.reboot()
+  else
+    rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
+    os.reboot()
   end
 else
-  local peripheralDirection = "right"
-  local stacks = getStacks(chestDirection,peripheralDirection)
-  local sorter = peripheral.wrap(peripheralDirection)
-  if stacksContain(stacks, iid, meta) then
-    result, tableKey = stacksContain(stacks, iid, meta)
-    if stacks[tableKey]["amount"] >= requestedAmount then
-      sorter.extract(0,stacks[tableKey]["uuid"],4,requestedAmount)
-      rednet.send(tonumber(requested[1]), "Item ready for collection!")
-      url = wwwdir .. "index.php?mode=extract&id=" .. stacks[tableKey]["id"] .. "&meta=" .. stacks[tableKey]["meta"] .. "&amount=" .. tonumber(requested[3]) .. "&password=" .. password
-      sConnection = http.get(url)
-      sConnection.close()
-      os.run({}, "startup")
-      return true
-    else
-      rednet.send(tonumber(requested[1]), "Not enough. You have " .. stacks[tableKey]["amount"] .. " left.")
-      os.run({}, "startup")
-    end
-  else
     -- UNCOMMENT line below if last computer in array.
     --rednet.send(tonumber(requested[1]), "Item not found")
     --Send rednet message to next in array, forcing it to start.
     rednet.send(nextComputer, msg)
     --restart script
-    os.run({}, "startup")
-  end
+    os.reboot()
 end

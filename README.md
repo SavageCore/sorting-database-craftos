@@ -51,8 +51,9 @@ No commands with this one.
 
 **Ingame setup:**
 
-![Imgur](http://i.imgur.com/z324iOB.png)
-*Wireless Modem under computer*
+![Imgur](http://i.imgur.com/UafI6ZC.png)
+![Imgur](http://i.imgur.com/E3z7mLF.png)
+*Wireless Modem on top of computer*
 
 These computers chain together and require some editing of the script. When you place your first sorting computer down as pictured above it will be assigned a unique ID, type `id` into the console this will return `This is computer #X`. Make a note of this ID and edit `cc-scipts/extract` change the number 4 on the line `rednet.send(4, msg)` to whichever ID you just created.
 
